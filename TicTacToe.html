@@ -1,0 +1,411 @@
+<html>
+<head>
+<title>Tic Tac Toe</title>
+<style>
+#table_map td {
+	width: 100px;
+	height: 100px;
+	text-align: center;
+	font-size: 50px;
+	font-family: arial;
+}
+</style>
+<script language="javascript">
+var side = "X";
+var turn = "human";
+var map = new Array();
+for(var i = 0; i < 3; i++)
+	map[i] = new Array();
+var human_victories = 0;
+var computer_victories = 0;
+var difficulty = 75;
+	
+function body_onload() {
+	side = document.getElementById("form_change_side").x_0.value;
+	start_new_game();
+}
+
+function change_side(el) {
+	side = el.value;
+	start_new_game();
+}
+
+function change_difficulty(el) {
+	difficulty = el.value;
+}
+
+function start_new_game() {
+	turn = (side == "X") ? "human" : "computer";
+	if(side == "X") {
+		document.getElementById("msg").innerHTML = "Click on a cell to start the game or change side";
+	}
+	else {
+		document.getElementById("msg").innerHTML = "&nbsp;";
+	}
+	for(var i = 0; i < 3; i++)
+		for(var j = 0; j < 3; j++)
+			map[i][j] = "";
+			
+	for(var i = 0; i < 3; i++) {
+		for(var j = 0; j < 3; j++) {
+			document.getElementById("td" + i + '' + j).innerHTML = "";
+				document.getElementById("td" + i + '' + j).style["background-color"] = "#ffffff";
+		}
+	}
+	if(turn == "computer") {
+		computer_turn();
+		turn = "human";
+	}
+}
+
+function human_click(td) {
+	if(turn != "human")
+		return false;
+	var i = td.id[2] * 1;
+	var j = td.id[3] * 1;
+	if(map[i][j] != "")
+		return false;
+	map[i][j] = side;
+	td.innerHTML = side;
+	verify_winner();
+	if(turn != "end") {
+		turn = "computer";
+		computer_turn();
+		turn = "human";
+		verify_winner();
+	}
+}
+
+function computer_random_move(computer_side) {
+	var ii = new Array();
+	var jj = new Array();
+	for(var i = 0; i < 3; i++) {
+		for(var j = 0; j < 3; j++) {
+			if(map[i][j] == "") {
+				ii[ii.length] = i;
+				jj[jj.length] = j;
+			}
+		}
+	}
+	if(ii.length == 0)
+		return;
+	
+	var r = Math.round(Math.random() * (ii.length - 1));
+	map[ii[r]][jj[r]] = computer_side;
+	document.getElementById("td" + ii[r] + "" + jj[r]).innerHTML = computer_side;
+}
+
+function computer_turn() {
+	if(turn != "computer")
+		return false;
+	
+	var computer_side = (side == "X") ? "O" : "X";
+	
+	if(difficulty != 100) {
+		var r = Math.floor(Math.random() * 100);
+		if(r > difficulty) {
+			computer_random_move(computer_side);
+			return;
+		}
+	}
+	
+	// try to win the lines:
+	for(var i = 0; i < 3; i++) {
+		for(var j = 0; j < 3; j++) {
+			if(map[i][j] == "" && map[i][(j + 1) % 3] == computer_side && map[i][(j + 2) % 3] == computer_side) {
+				map[i][j] = computer_side;
+				document.getElementById("td" + i + '' + j).innerHTML = computer_side;
+				return;
+			}
+		}
+	}
+	
+	// try to win the columns:
+	for(var j = 0; j < 3; j++) {
+		for(var i = 0; i < 3; i++) {
+			if(map[i][j] == "" && map[(i + 1) % 3][j] == computer_side && map[(i + 2) % 3][j] == computer_side) {
+				map[i][j] = computer_side;
+				document.getElementById("td" + i + '' + j).innerHTML = computer_side;
+				return;
+			}
+		}
+	}
+	
+	// try to win the first diagonal:
+	for(var i = 0; i < 3; i++) {
+		if(map[i][i] == "" && map[(i + 1) % 3][(i + 1) % 3] == computer_side && map[(i + 2) % 3][(i + 2) % 3] == computer_side) {
+			map[i][i] = computer_side;
+			document.getElementById("td" + i + '' + i).innerHTML = computer_side;
+			return;
+		}
+	}
+	
+	// try to win the second diagonal:
+	for(var i = 0; i < 3; i++) {
+		if(map[i][2 - i] == "" && map[(i + 1) % 3][2 - ((i + 1) % 3)] == computer_side && map[(i + 2) % 3][2 - ((i + 2) % 3)] == computer_side) {
+			map[i][2 - i] = computer_side;
+			document.getElementById("td" + i + '' + (2 - i * 1)).innerHTML = computer_side;
+			return;
+		}
+	}
+	
+	//////////////////////////////////////////////
+	
+	// prevent the human lines:
+	for(var i = 0; i < 3; i++) {
+		for(var j = 0; j < 3; j++) {
+			if(map[i][j] == "" && map[i][(j + 1) % 3] == side && map[i][(j + 2) % 3] == side) {
+				map[i][j] = computer_side;
+				document.getElementById("td" + i + '' + j).innerHTML = computer_side;
+				return;
+			}
+		}
+	}
+	
+	// prevent the human columns:
+	for(var j = 0; j < 3; j++) {
+		for(var i = 0; i < 3; i++) {
+			if(map[i][j] == "" && map[(i + 1) % 3][j] == side && map[(i + 2) % 3][j] == side) {
+				map[i][j] = computer_side;
+				document.getElementById("td" + i + '' + j).innerHTML = computer_side;
+				return;
+			}
+		}
+	}
+	
+	// prevent the human first diagonal:
+	for(var i = 0; i < 3; i++) {
+		if(map[i][i] == "" && map[(i + 1) % 3][(i + 1) % 3] == side && map[(i + 2) % 3][(i + 2) % 3] == side) {
+			map[i][i] = computer_side;
+			document.getElementById("td" + i + '' + i).innerHTML = computer_side;
+			return;
+		}
+	}
+	
+	// prevent the human second diagonal:
+	for(var i = 0; i < 3; i++) {
+		if(map[i][2 - i] == "" && map[(i + 1) % 3][2 - ((i + 1) % 3)] == side && map[(i + 2) % 3][2 - ((i + 2) % 3)] == side) {
+			map[i][2 - i] = computer_side;
+			document.getElementById("td" + i + '' + (2 - i * 1)).innerHTML = computer_side;
+			return;
+		}
+	}
+	
+	///////////////////////////////////////////////
+	
+	if(computer_side == "O" && map[1][1] == "") {
+		map[1][1] = computer_side;
+		document.getElementById("td11").innerHTML = computer_side;
+		return;
+	}
+	
+	///////////////////////////////////////////////
+	
+	// try to build the lines:
+	for(var i = 0; i < 3; i++) {
+		for(var j = 0; j < 3; j++) {
+			if(map[i][j] == computer_side && map[i][(j + 1) % 3] == "" && map[i][(j + 2) % 3] == "") {
+				map[i][(j + 1) % 3] = computer_side;
+				document.getElementById("td" + i + '' + ((j + 1) % 3)).innerHTML = computer_side;
+				return;
+			}
+		}
+	}
+	
+	// try to build the columns:
+	for(var j = 0; j < 3; j++) {
+		for(var i = 0; i < 3; i++) {
+			if(map[i][j] == computer_side && map[(i + 1) % 3][j] == "" && map[(i + 2) % 3][j] == "") {
+				map[(i + 1) % 3][j] = computer_side;
+				document.getElementById("td" + ((i + 1) % 3) + '' + j).innerHTML = computer_side;
+				return;
+			}
+		}
+	}
+	
+	// try to build the first diagonal:
+	for(var i = 0; i < 3; i++) {
+		if(map[i][i] == computer_side && map[(i + 1) % 3][(i + 1) % 3] == "" && map[(i + 2) % 3][(i + 2) % 3] == "") {
+			map[(i + 1) % 3][(i + 1) % 3] = computer_side;
+			document.getElementById("td" + ((i + 1) % 3) + '' + ((i + 1) % 3)).innerHTML = computer_side;
+			return;
+		}
+	}
+	
+	// try to build the second diagonal:
+	for(var i = 0; i < 3; i++) {
+		if(map[i][2 - i] == computer_side && map[(i + 1) % 3][2 - ((i + 1) % 3)] == "" && map[(i + 2) % 3][2 - ((i + 2) % 3)] == "") {
+			map[(i + 1) % 3][2 - ((i + 1) % 3)] = computer_side;
+			document.getElementById("td" + ((i + 1) % 3) + '' + (2 - ((i + 1) % 3))).innerHTML = computer_side;
+			return;
+		}
+	}
+	
+	///////////////////////////////////////////////
+	
+	// prevent the human to build the first diagonal:
+	for(var i = 0; i < 3; i++) {
+		if(map[i][i] == side && map[(i + 1) % 3][(i + 1) % 3] == "" && map[(i + 2) % 3][(i + 2) % 3] == "") {
+			map[(i + 1) % 3][(i + 1) % 3] = computer_side;
+			document.getElementById("td" + ((i + 1) % 3) + '' + ((i + 1) % 3)).innerHTML = computer_side;
+			return;
+		}
+	}
+	
+	// prevent the human to build the second diagonal:
+	for(var i = 0; i < 3; i++) {
+		if(map[i][2 - i] == side && map[(i + 1) % 3][2 - ((i + 1) % 3)] == "" && map[(i + 2) % 3][2 - ((i + 2) % 3)] == "") {
+			map[(i + 1) % 3][2 - ((i + 1) % 3)] = computer_side;
+			document.getElementById("td" + ((i + 1) % 3) + '' + (2 - ((i + 1) % 3))).innerHTML = computer_side;
+			return;
+		}
+	}
+	
+	// prevent the human to build the lines:
+	for(var i = 0; i < 3; i++) {
+		for(var j = 0; j < 3; j++) {
+			if(map[i][j] == side && map[i][(j + 1) % 3] == "" && map[i][(j + 2) % 3] == "") {
+				map[i][(j + 1) % 3] = computer_side;
+				document.getElementById("td" + i + '' + ((j + 1) % 3)).innerHTML = computer_side;
+				return;
+			}
+		}
+	}
+	
+	// prevent the human to build the columns:
+	for(var j = 0; j < 3; j++) {
+		for(var i = 0; i < 3; i++) {
+			if(map[i][j] == side && map[(i + 1) % 3][j] == "" && map[(i + 2) % 3][j] == "") {
+				map[(i + 1) % 3][j] = computer_side;
+				document.getElementById("td" + ((i + 1) % 3) + '' + j).innerHTML = computer_side;
+				return;
+			}
+		}
+	}
+	
+	///////////////////////////////////////////////
+	if(map[0][0] == "") {
+		map[0][0] = computer_side;
+		document.getElementById("td00").innerHTML = computer_side;
+		return;
+	}
+	
+	for(var i = 0; i < 3; i++) {
+		for(var j = 0; j < 3; j++) {
+			if(map[i][j] == "") {
+				map[i][j] = computer_side;
+				document.getElementById("td" + i + "" + j).innerHTML = computer_side;
+			}
+		}
+	}
+}
+
+function verify_winner() {
+	// lines: 
+	for(var i = 0; i < 3; i++) {
+		if(map[i][0] != "" && map[i][0] == map[i][1] && map[i][0] == map[i][2]) {
+			there_is_a_winner(map[i][0]);
+			for(var j = 0; j < 3; j++)
+				document.getElementById("td" + i + '' + j).style["background-color"] = "#ffcccc";
+		}
+	}
+	
+	// columns: 
+	for(var j = 0; j < 3; j++) {
+		if(map[0][j] != "" && map[0][j] == map[1][j] && map[0][j] == map[2][j]) {
+			there_is_a_winner(map[0][j]);
+			for(var i = 0; i < 3; i++)
+				document.getElementById("td" + i + '' + j).style["background-color"] = "#ffcccc";
+		}
+	}
+	
+	// first diagonal:
+	if(map[0][0] != "" && map[0][0] == map[1][1] && map[0][0] == map[2][2]) {
+		there_is_a_winner(map[0][0]);
+		for(var i = 0; i < 3; i++)
+			document.getElementById("td" + i + '' + i).style["background-color"] = "#ffcccc";
+	}
+	
+	// second diagonal:
+	if(map[0][2] != "" && map[0][2] == map[1][1] && map[0][2] == map[2][0]) {
+		there_is_a_winner(map[0][2]);
+		document.getElementById("td02").style["background-color"] = "#ffcccc";
+		document.getElementById("td11").style["background-color"] = "#ffcccc";
+		document.getElementById("td20").style["background-color"] = "#ffcccc";
+	}
+	
+	// verify draw:
+	draw = true;
+	for(var i = 0; i < 3; i++)
+		for(var j = 0; j < 3; j++)
+			if(map[i][j] == "")
+				draw = false;
+	if(draw)
+		document.getElementById("msg").innerHTML = "It's a draw!";
+}
+
+function there_is_a_winner(who) {
+	if(who == side) {
+		human_victories++;
+		document.getElementById("msg").innerHTML = "Human wins!";
+	}
+	else {
+		computer_victories++;
+		document.getElementById("msg").innerHTML = "Computer wins!";
+	}
+	
+	document.getElementById("span_human_victories").innerHTML = human_victories;
+	document.getElementById("span_computer_victories").innerHTML = computer_victories;
+	turn = "end";
+}
+</script>
+</head>
+<body onload="body_onload(); ">
+<p><a href="https://github.com/huleacatalin/TicTacToe" target="_blank">https://github.com/huleacatalin/TicTacToe</a></p>
+<table id="table_map" border="1">
+<tr>
+<td id="td00" onclick="human_click(this); "></td>
+<td id="td01" onclick="human_click(this); "></td>
+<td id="td02" onclick="human_click(this); "></td>
+</tr>
+<tr>
+<td id="td10" onclick="human_click(this); "></td>
+<td id="td11" onclick="human_click(this); "></td>
+<td id="td12" onclick="human_click(this); "></td>
+</tr>
+<tr>
+<td id="td20" onclick="human_click(this); "></td>
+<td id="td21" onclick="human_click(this); "></td>
+<td id="td22" onclick="human_click(this); "></td>
+</tr>
+</table>
+
+<p id="msg"></p>
+
+<table width="300">
+<tr>
+<td width="50%">
+Human victories: <span id="span_human_victories"></span>
+<form id="form_change_side" onsubmit="return false; ">
+Change side: <br>
+<input type="radio" name="x_0" value="X" onchange="change_side(this); " checked> X <br>
+<input type="radio" name="x_0" value="O" onchange="change_side(this); "> O
+</form>
+<br>
+</td>
+<td width="50%" valign="top" align="right">
+Computer victories: <span id="span_computer_victories"></span>
+<form id="form_change_difficulty" onsubmit="return false; ">
+Choose difficulty: <br>
+<input type="radio" name="input_difficulty" value="100" onchange="change_difficulty(this); "> 100% (difficult)<br>
+<input type="radio" name="input_difficulty" value="75" onchange="change_difficulty(this); " checked> 75% (medium)
+<input type="radio" name="input_difficulty" value="50" onchange="change_difficulty(this); "> 50% (low)
+</form>
+</td>
+</tr>
+</table>
+
+<input type="button" onclick="start_new_game(); " value="Start a new game">
+
+</body>
+</html>
